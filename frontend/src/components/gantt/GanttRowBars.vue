@@ -39,6 +39,20 @@
 				@pointerdown="handleBarPointerDown(bar, $event)"
 			/>
 
+			<!-- Progress fill (percentuale completata) -->
+			<rect
+				v-if="(showTaskProgress ?? true) && typeof bar.meta?.percentDone === 'number'"
+				class="gantt-bar-progress"
+				:x="getBarX(bar)"
+				:y="4"
+				:width="Math.max(0, Math.min(getBarWidth(bar), Math.round(getBarWidth(bar) * (bar.meta.percentDone / 100))))"
+				:height="32"
+				rx="4"
+				:fill="getBarFill(bar)"
+				:style="{ opacity: 0.35 }"
+				aria-hidden="true"
+			/>
+
 			<!-- Left resize handle -->
 			<rect
 				:x="getBarX(bar) - RESIZE_HANDLE_OFFSET"
@@ -93,6 +107,41 @@
 			>
 				{{ bar.meta?.label || bar.id }}
 			</text>
+			<!-- Label chips (etichette) -->
+			<g
+				v-if="(showTaskLabels ?? true) && Array.isArray(bar.meta?.labels) && bar.meta.labels.length"
+				class="gantt-bar-labels"
+				:clip-path="`url(#clip-${bar.id})`"
+				aria-hidden="true"
+				style="pointer-events:none"
+			>
+				<template v-for="(lbl, li) in bar.meta.labels.slice(0, 3)" :key="lbl.id ?? li">
+					<rect
+						:x="getBarX(bar) + 8 + (li * 56)"
+						:y="8"
+						rx="3" ry="3"
+						width="48" height="14"
+						:fill="lbl.color || 'var(--grey-700)'"
+					/>
+					<text
+						:x="getBarX(bar) + 8 + (li * 56) + 4"
+						:y="19"
+						fill="white"
+						font-size="10"
+					>
+						{{ lbl.title }}
+					</text>
+				</template>
+				<text
+					v-if="bar.meta.labels.length > 3"
+					:x="getBarX(bar) + 8 + (3 * 56) + 4"
+					:y="19"
+					fill="white"
+					font-size="10"
+				>
+					+{{ bar.meta.labels.length - 3 }}
+				</text>
+			</g>
 		</GanttBarPrimitive>
 	</svg>
 </template>
@@ -127,6 +176,8 @@ const props = defineProps<{
 	focusedRow: string | null
 	focusedCell: number | null
 	rowId: string
+	showTaskProgress?: boolean
+	showTaskLabels?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -281,6 +332,19 @@ function startResize(bar: GanttBarModel, edge: 'start' | 'end', event: PointerEv
 	font-size: .85rem;
 	pointer-events: none;
 	user-select: none;
+}
+
+.gantt-bar-progress {
+  pointer-events: none;
+  transition: width .15s ease;
+}
+
+.gantt-bar-labels {
+  pointer-events: none;
+
+  text {
+    user-select: none;
+  }
 }
 
 :deep(.gantt-resize-handle) {

@@ -803,7 +803,9 @@
       "fromuntil": "Tasks from {from} until {until}",
       "select": "Select a date range",
       "noTasks": "Nothing to do — Have a nice day!",
-      "compactView": "Compact view."
+      "compactView": "Compact view.",
+      "taskLabels": "Show task labels",
+      "taskProgress": "Show progress bars"
     },
     "detail": {
       "chooseDueDate": "Click here to set a due date",

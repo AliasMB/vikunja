@@ -792,7 +792,9 @@
 			"fromuntil": "Attività dal {from} al {until}",
 			"select": "Seleziona intervallo di date",
 			"noTasks": "Nessuna attività — Buona giornata!",
-      "compactView": "Mostra la vista compatta."
+      "compactView": "Mostra la vista compatta.",
+      "taskLabels": "Mostra etichette",
+      "taskProgress": "Mostra barra progresso"
 		},
 		"detail": {
 			"chooseDueDate": "Clicca qui per impostare una data di scadenza",

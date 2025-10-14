@@ -22,10 +22,14 @@ export interface GanttFilters {
 	dateTo: DateISO
 	showTasksWithoutDates: boolean
 	compactView: boolean
+	showTaskLabels: boolean
+	showTaskProgress: boolean
 }
 
 const DEFAULT_SHOW_TASKS_WITHOUT_DATES = false
 const DEFAULT_SHOW_COMPACT_VIEW = true
+const DEFAULT_SHOW_TASK_LABELS = true
+const DEFAULT_SHOW_TASK_PROGRESS = true
 
 const DEFAULT_DATEFROM_DAY_OFFSET = -15
 const DEFAULT_DATETO_DAY_OFFSET = +55
@@ -50,6 +54,8 @@ function ganttRouteToFilters(route: Partial<RouteLocationNormalized>): GanttFilt
 		dateTo: parseDateProp(ganttRoute.query?.dateTo as DateKebab) || getDefaultDateTo(),
 		showTasksWithoutDates: parseBooleanProp(ganttRoute.query?.showTasksWithoutDates as string) || DEFAULT_SHOW_TASKS_WITHOUT_DATES,
 		compactView: parseBooleanProp(ganttRoute.query?.compactView as string) || DEFAULT_SHOW_COMPACT_VIEW,
+		showTaskLabels: parseBooleanProp(ganttRoute.query?.showTaskLabels as string) || DEFAULT_SHOW_TASK_LABELS,     
+		showTaskProgress: parseBooleanProp(ganttRoute.query?.showTaskProgress as string) || DEFAULT_SHOW_TASK_PROGRESS, 
 	}
 }
 
@@ -79,6 +85,14 @@ function ganttFiltersToRoute(filters: GanttFilters): RouteLocationRaw {
 
 	if (filters.compactView) {
 		query.compactView = String(filters.compactView)
+	}
+	
+	if (filters.showTaskLabels !== DEFAULT_SHOW_TASK_LABELS) {
+		query.showTaskLabels = String(filters.showTaskLabels)
+	}
+
+	if (filters.showTaskProgress !== DEFAULT_SHOW_TASK_PROGRESS) {
+		query.showTaskProgress = String(filters.showTaskProgress)
 	}
 
 	return {

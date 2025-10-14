@@ -50,6 +50,18 @@
 					>
 						{{ $t('task.show.compactView') }}
 					</FancyCheckbox>
+					<FancyCheckbox
+						v-model="filters.showTaskLabels"
+						is-block
+					>
+						{{ $t('task.show.taskLabels') }}
+					</FancyCheckbox>
+					<FancyCheckbox
+						v-model="filters.showTaskProgress"
+						is-block
+					>
+						{{ $t('task.show.taskProgress') }}
+					</FancyCheckbox>
 				</div>
 			</Card>
 

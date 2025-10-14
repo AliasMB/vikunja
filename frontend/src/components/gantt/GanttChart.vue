@@ -51,6 +51,8 @@
 									:focused-row="focusedRow"
 									:focused-cell="focusedCell"
 									:row-id="rowId"
+									:show-task-progress="filters.showTaskProgress"
+									:show-task-labels="filters.showTaskLabels"
 									@barPointerDown="handleBarPointerDown"
 									@startResize="startResize"
 									@updateTask="updateGanttTask"
@@ -160,6 +162,16 @@ function transformTaskToGanttBar(t: ITask): GanttBarModel {
 
 	const taskColor = getHexColor(t.hexColor)
 
+	const labels = Array.isArray(t.labels) ? t.labels.map(l => ({
+					id: l.id,
+					title: l.title,
+					color: getHexColor(l.hexColor),
+					})) : []
+
+	const percentDone = typeof t.percentDone === 'number'
+						? Math.min(100, Math.max(0, t.percentDone))
+						: undefined
+
 	const bar = {
 		id: String(t.id),
 		start: startDate,
@@ -170,8 +182,11 @@ function transformTaskToGanttBar(t: ITask): GanttBarModel {
 			color: taskColor,
 			hasActualDates: Boolean(t.startDate && t.endDate),
 			isDone: t.done,
+			labels,          
+			percentDone,  
 		},
 	}
+	
 
 	return bar
 }
