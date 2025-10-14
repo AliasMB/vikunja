@@ -192,8 +192,7 @@ watch(
 			const taskEnd = getRoundedDate(task.endDate, props.defaultTaskEndDate, false)
 
 			// Task is visible if it overlaps with the current date range
-			return taskStart <= dateToDate.value
-&& taskEnd >= dateFromDate.value
+			return taskStart <= dateToDate.value && taskEnd >= dateFromDate.value
 		})
 		
 		filteredTasks.forEach((t, index) => {
@@ -214,10 +213,53 @@ watch(
 		ganttBars.value = bars.map(bar => [bar])
 		ganttRows.value = rows
 		cellsByRow.value = cells
+
+		if (filters.value.compactView) {
+			ganttBars.value = assignRowsToGanttBars()
+		}
 		
 	},
 	{deep: true, immediate: true},
 )
+
+function doBarsOverlap(bar1: GanttBarObject, rowBars: GanttBarObject[]): boolean {
+	for (let j = 0; j < rowBars.length; j++) {
+		if ((bar1.startDate >= rowBars[j].startDate && bar1.startDate < rowBars[j].endDate) || 
+		(rowBars[j].startDate >= bar1.startDate && rowBars[j].startDate < bar1.endDate)) {
+			return true
+		}
+	}
+	return false
+}
+
+function assignRowsToGanttBars() {
+	const assignedBars = [];
+	let currentRow = [];
+
+	let gttbars = ganttBars.value
+
+	for (let i = 0; i < gttbars.length; i++) {
+		const bar = gttbars[i][0]; // Since each array contains a single object
+		let placed = false;
+
+		// push to existing rows if not colliding
+		for (let j = 0; j < assignedBars.length; j++) {
+			if (!doBarsOverlap(bar, assignedBars[j])) {
+				assignedBars[j].push(bar);
+				placed = true;
+				break;
+			}
+		}
+
+		// If the bar was not placed, add a new row
+		if (!placed) {
+			currentRow = [bar];
+			assignedBars.push(currentRow);
+		}
+	}
+
+	return assignedBars;
+}
 
 function updateGanttTask(id: string, newStart: Date, newEnd: Date) {
 	emit('update:task', {
