@@ -222,10 +222,10 @@ watch(
 	{deep: true, immediate: true},
 )
 
-function doBarsOverlap(bar1: GanttBarObject, rowBars: GanttBarObject[]): boolean {
+function doBarsOverlap(bar1: GanttBarModel, rowBars: GanttBarModel[]): boolean {
 	for (let j = 0; j < rowBars.length; j++) {
-		if ((bar1.startDate >= rowBars[j].startDate && bar1.startDate < rowBars[j].endDate) || 
-		(rowBars[j].startDate >= bar1.startDate && rowBars[j].startDate < bar1.endDate)) {
+		if ((bar1.start >= rowBars[j].start && bar1.start < rowBars[j].end) || 
+			(rowBars[j].start >= bar1.start && rowBars[j].start < bar1.end)) {
 			return true
 		}
 	}
@@ -233,13 +233,10 @@ function doBarsOverlap(bar1: GanttBarObject, rowBars: GanttBarObject[]): boolean
 }
 
 function assignRowsToGanttBars() {
-	const assignedBars = [];
-	let currentRow = [];
+	const assignedBars: GanttBarModel[][] = []
 
-	let gttbars = ganttBars.value
-
-	for (let i = 0; i < gttbars.length; i++) {
-		const bar = gttbars[i][0]; // Since each array contains a single object
+	for (let i = 0; i < ganttBars.value.length; i++) {
+		const bar = ganttBars.value[i][0]; // Since each array contains a single object
 		let placed = false;
 
 		// push to existing rows if not colliding
@@ -253,8 +250,7 @@ function assignRowsToGanttBars() {
 
 		// If the bar was not placed, add a new row
 		if (!placed) {
-			currentRow = [bar];
-			assignedBars.push(currentRow);
+            assignedBars.push([bar]);
 		}
 	}
 
