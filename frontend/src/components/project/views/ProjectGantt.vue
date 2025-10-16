@@ -137,20 +137,20 @@ const {
 const DEFAULT_DATE_RANGE_DAYS = 7
 
 const today = new Date()
-const defaultTaskStartDate: DateISO = new Date(today.setHours(0, 0, 0, 0)).toISOString()
-const defaultTaskEndDate: DateISO = new Date(new Date(
-	today.getFullYear(),
-	today.getMonth(),
-	today.getDate() + DEFAULT_DATE_RANGE_DAYS,
-).setHours(23, 59, 0, 0)).toISOString()
+const defaultTaskStartDate = new Date(today.setHours(0, 0, 0, 0))
+const defaultTaskEndDate = new Date(new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate() + DEFAULT_DATE_RANGE_DAYS,
+).setHours(23, 59, 0, 0))
 
-async function addGanttTask(title: ITask['title']) {
-	return await addTask({
-		title,
-		projectId: filters.value.projectId,
-		startDate: defaultTaskStartDate,
-		endDate: defaultTaskEndDate,
-	})
+function addGanttTask(title: ITask['title']) {
+    return addTask({
+        title,
+        projectId: filters.value.projectId,
+        startDate: defaultTaskStartDate,
+        endDate: defaultTaskEndDate,
+    })
 }
 
 const flatPickerEl = ref<typeof Foo | null>(null)

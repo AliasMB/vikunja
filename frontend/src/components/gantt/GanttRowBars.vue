@@ -2,7 +2,7 @@
 	<svg
 		class="gantt-row-bars"
 		:width="totalWidth"
-		height="40"
+		height="50"
 		xmlns="http://www.w3.org/2000/svg"
 		role="img"
 		:aria-label="$t('project.gantt.taskBarsForRow', { rowId })"
@@ -19,10 +19,10 @@
 			<!-- Main bar -->
 			<rect
 				:x="getBarX(bar)"
-				:y="4"
+				:y="6"
 				:width="getBarWidth(bar)"
-				:height="32"
-				:rx="4"
+				:height="38"
+				:rx="6"
 				:fill="getBarFill(bar)"
 				:stroke="getBarStroke(bar)"
 				:stroke-width="getBarStrokeWidth(bar)"
@@ -40,25 +40,45 @@
 			/>
 
 			<!-- Progress fill (percentuale completata) -->
+			 <defs>
+				<linearGradient :id="`progress-gradient-${bar.id}`" x1="0%" y1="0%" x2="100%" y2="0%">
+					<stop offset="0%" :style="`stop-color:${getBarFill(bar)};stop-opacity:0.3`" />
+					<stop offset="100%" :style="`stop-color:${getBarFill(bar)};stop-opacity:0.6`" />
+				</linearGradient>
+				<pattern :id="`progress-stripes-${bar.id}`" patternUnits="userSpaceOnUse" width="8" height="8">
+					<rect width="8" height="8" :fill="`url(#progress-gradient-${bar.id})`"/>
+					<path d="M0,8 L8,0 M-2,2 L2,-2 M6,10 L10,6" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+				</pattern>
+			</defs>
 			<rect
 				v-if="(showTaskProgress ?? true) && typeof bar.meta?.percentDone === 'number'"
 				class="gantt-bar-progress"
 				:x="getBarX(bar)"
-				:y="4"
+				:y="6"
 				:width="Math.max(0, Math.min(getBarWidth(bar), Math.round(getBarWidth(bar) * (bar.meta.percentDone / 100))))"
-				:height="32"
-				rx="4"
-				:fill="getBarFill(bar)"
-				:style="{ opacity: 0.35 }"
+				:height="38"
+				rx="6"
+				:fill="`url(#progress-stripes-${bar.id})`"
+				aria-hidden="true"
+			/>
+			<!-- Linea di separazione tra completato/da fare -->
+			<line
+				v-if="(showTaskProgress ?? true) && typeof bar.meta?.percentDone === 'number' && bar.meta.percentDone > 0 && bar.meta.percentDone < 100"
+				:x1="getBarX(bar) + Math.round(getBarWidth(bar) * (bar.meta.percentDone / 100))"
+				:y1="8"
+				:x2="getBarX(bar) + Math.round(getBarWidth(bar) * (bar.meta.percentDone / 100))"
+				:y2="42"
+				stroke="rgba(255,255,255,0.8)"
+				stroke-width="2"
 				aria-hidden="true"
 			/>
 
 			<!-- Left resize handle -->
 			<rect
 				:x="getBarX(bar) - RESIZE_HANDLE_OFFSET"
-				:y="4"
+				:y="6"
 				:width="6"
-				:height="32"
+				:height="38"
 				:rx="3"
 				fill="var(--white)"
 				stroke="var(--primary)"
@@ -72,9 +92,9 @@
 			<!-- Right resize handle -->
 			<rect
 				:x="getBarX(bar) + getBarWidth(bar) - RESIZE_HANDLE_OFFSET"
-				:y="4"
+				:y="6"
 				:width="6"
-				:height="32"
+				:height="38"
 				:rx="3"
 				fill="var(--white)"
 				stroke="var(--primary)"
@@ -90,16 +110,16 @@
 				<clipPath :id="`clip-${bar.id}`">
 					<rect
 						:x="getBarX(bar) + 2"
-						:y="4"
+						:y="6"
 						:width="getBarWidth(bar) - 4"
-						:height="32"
-						:rx="4"
+						:height="38"
+						:rx="6"
 					/>
 				</clipPath>
 			</defs>
 			<text
 				:x="getBarTextX(bar)"
-				:y="24"
+				:y="28"
 				class="gantt-bar-text"
 				:fill="getBarTextColor(bar)"
 				:clip-path="`url(#clip-${bar.id})`"
@@ -115,32 +135,74 @@
 				aria-hidden="true"
 				style="pointer-events:none"
 			>
-				<template v-for="(lbl, li) in bar.meta.labels.slice(0, 3)" :key="lbl.id ?? li">
+				<template v-for="(lbl, li) in bar.meta.labels.slice(0, 2)" :key="`${lbl.id}-${li}-top`">
 					<rect
 						:x="getBarX(bar) + 8 + (li * 56)"
-						:y="8"
-						rx="3" ry="3"
-						width="48" height="14"
-						:fill="lbl.color || 'var(--grey-700)'"
+						:y="9"
+						rx="8" ry="8"
+						:width="Math.min(56, Math.max(20, lbl.title.length * 6 + 12))"
+						height="16"
+						:fill="lbl.color || 'var(--grey-600)'"
+						:stroke="'rgba(255,255,255,0.3)'"
+						stroke-width="1"
 					/>
 					<text
-						:x="getBarX(bar) + 8 + (li * 56) + 4"
-						:y="19"
+						:x="getBarX(bar) + 8 + (li * 62) + 6"
+						:y="20"
 						fill="white"
-						font-size="10"
+						font-size="11"
+						font-weight="500"
+						text-anchor="start"
 					>
-						{{ lbl.title }}
+						{{ lbl.title.length > 8 ? lbl.title.slice(0, 8) + '...' : lbl.title }}
 					</text>
 				</template>
-				<text
-					v-if="bar.meta.labels.length > 3"
-					:x="getBarX(bar) + 8 + (3 * 56) + 4"
-					:y="19"
-					fill="white"
-					font-size="10"
-				>
-					+{{ bar.meta.labels.length - 3 }}
-				</text>
+				<!-- Seconda riga di etichette (se ce ne sono altre) -->
+				<template v-if="bar.meta.labels.length > 2" v-for="(lbl, li) in bar.meta.labels.slice(2, 4)" :key="`${lbl.id}-${li}-bottom`">
+					<rect
+						:x="getBarX(bar) + 8 + (li * 62)"
+						:y="27"
+						rx="8" ry="8"
+						:width="Math.min(56, Math.max(20, lbl.title.length * 6 + 12))"
+						height="16"
+						:fill="lbl.color || 'var(--grey-600)'"
+						:stroke="'rgba(255,255,255,0.3)'"
+						stroke-width="1"
+					/>
+					<text
+						:x="getBarX(bar) + 8 + (li * 62) + 6"
+						:y="38"
+						fill="white"
+						font-size="11"
+						font-weight="500"
+						text-anchor="start"
+					>
+						{{ lbl.title.length > 8 ? lbl.title.slice(0, 8) + '...' : lbl.title }}
+					</text>
+				</template>
+				
+				<!-- Indicatore per etichette aggiuntive -->
+				<g v-if="bar.meta.labels.length > 4">
+					<circle
+						:cx="getBarX(bar) + 140"
+						:cy="20"
+						r="12"
+						fill="var(--grey-700)"
+						stroke="rgba(255,255,255,0.5)"
+						stroke-width="1"
+					/>
+					<text
+						:x="getBarX(bar) + 140"
+						:y="25"
+						fill="white"
+						font-size="10"
+						font-weight="bold"
+						text-anchor="middle"
+					>
+						+{{ bar.meta.labels.length - 4 }}
+					</text>
+				</g>
+
 			</g>
 		</GanttBarPrimitive>
 	</svg>

@@ -19,7 +19,7 @@
 			<GanttVerticalGridLines
 				:timeline-data="timelineData"
 				:total-width="totalWidth"
-				:height="ganttRows.length * 40"
+				:height="ganttRows.length * 50"
 				:day-width-pixels="DAY_WIDTH_PIXELS"
 			/>
 
@@ -93,8 +93,8 @@ const props = defineProps<{
 	isLoading: boolean,
 	filters: GanttFilters,
 	tasks: Map<ITask['id'], ITask>,
-	defaultTaskStartDate: DateISO
-	defaultTaskEndDate: DateISO
+	defaultTaskStartDate: Date
+	defaultTaskEndDate: Date
 }>()
 
 const emit = defineEmits<{
@@ -157,8 +157,8 @@ function getRoundedDate(value: string | Date | undefined, fallback: Date, isStar
 }
 
 function transformTaskToGanttBar(t: ITask): GanttBarModel {
-	const startDate = getRoundedDate(t.startDate, props.defaultTaskStartDate, true)
-	const endDate = getRoundedDate(t.endDate, props.defaultTaskEndDate, false)
+	const startDate = getRoundedDate(t.startDate  ?? undefined, props.defaultTaskStartDate, true)
+	const endDate = getRoundedDate(t.endDate  ?? undefined, props.defaultTaskEndDate, false)
 
 	const taskColor = getHexColor(t.hexColor)
 
@@ -199,19 +199,20 @@ watch(
 		const cells: Record<string, string[]> = {}
 
 		const filteredTasks = Array.from(tasks.value.values()).filter(task => {
-			if (!filters.value.showTasksWithoutDates && (!task.startDate || !task.endDate)) {
+			if (!filters.value.showTasksWithoutDates && (!tasks.startDate || !tasks.endDate)) {
 				return false
 			}
 
-			const taskStart = getRoundedDate(task.startDate, props.defaultTaskStartDate, true)
-			const taskEnd = getRoundedDate(task.endDate, props.defaultTaskEndDate, false)
+			const taskStart = getRoundedDate(tasks.startDate, props.defaultTaskStartDate, true)
+			const taskEnd = getRoundedDate(tasks.endDate, props.defaultTaskEndDate, false)
 
 			// Task is visible if it overlaps with the current date range
 			return taskStart <= dateToDate.value && taskEnd >= dateFromDate.value
 		})
 		
 		filteredTasks.forEach((t, index) => {
-			const bar = transformTaskToGanttBar(t)
+    		const task = t as ITask 
+			const bar = transformTaskToGanttBar(task)
 			bars.push(bar)
 			
 			const rowId = `row-${index}`
@@ -551,7 +552,33 @@ onUnmounted(() => {
 
 .gantt-row-content {
 	position: relative;
-	min-block-size: 40px;
+	min-block-size: 50px;
 	inline-size: 100%;
+}
+
+.gantt-bar-progress {
+	pointer-events: none;
+	transition: width .15s ease;
+}
+
+.gantt-bar-labels {
+	pointer-events: none;
+
+	text {
+		user-select: none;
+	}
+	
+	rect {
+		transition: all 0.2s ease;
+	}
+}
+
+.gantt-bar {
+	transition: all 0.15s ease;
+	
+	&:hover {
+		opacity: 0.9;
+		transform: translateY(-1px);
+	}
 }
 </style>
